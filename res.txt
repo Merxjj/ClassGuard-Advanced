@@ -1,0 +1,1 @@
+{"status":"success","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzc1MTYwNzE0LCJleHAiOjE3ODI5MzY3MTR9.XnBhCxM9LjpH1Gy6Vzq7vK4BjF4mZbq7JVz4fNN4eTA","data":{"user":{"id":3,"name":"Test","email":"test2@test.com","role":"student","studentId":"123","updatedAt":"2026-04-02T20:11:54.380Z","createdAt":"2026-04-02T20:11:54.380Z"}}}
