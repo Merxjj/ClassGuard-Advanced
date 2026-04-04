@@ -44,7 +44,7 @@ module.exports = (io) => {
         } catch (err) {
           console.error(err);
         }
-      }, 120000); // 2 minutes
+      }, 1000); // 1 second (Hyper-testing Mode)
 
       activeIntervals.set(sessionId, intervalId);
     });
