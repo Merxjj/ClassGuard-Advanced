@@ -28,7 +28,9 @@ exports.markAttendance = async (req, res) => {
     }
 
     // 4. IP Validation
-    let studentIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    let rawIp = req.headers['x-forwarded-for'];
+    let studentIp = rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress;
+
     if (studentIp === '::1' || studentIp === '::ffff:127.0.0.1') studentIp = '127.0.0.1';
 
     // Anti-proxy logic: compare with gateway IP
@@ -40,8 +42,7 @@ exports.markAttendance = async (req, res) => {
             ipAddress: studentIp
         });
         
-        // Uncomment below line to actively block in production
-        // return res.status(403).json({ error: `Proxy attendance blocked! Must connect to class WiFi.` });
+        return res.status(403).json({ error: `Proxy attendance blocked! Must connect to class WiFi.` });
     }
 
     // 5. Ensure student hasn't already marked attendance

@@ -97,11 +97,6 @@
               <div class="ripple"></div>
             </div>
             <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);">Refreshes every 2 minutes</p>
-            
-            <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-               <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Remote Check-In Token (Click to auto-copy all):</p>
-               <input type="text" id="admin-token-display" readonly onclick="this.select();" style="width: 100%; font-size: 0.8rem; background: transparent; color: var(--primary); border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; text-align: center; cursor: pointer;" />
-            </div>
           </div>
         </div>
 
@@ -126,14 +121,6 @@
         
         <div id="reader" class="qr-scanner"></div>
         
-        <div id="manual-entry-section" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-           <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">Camera blocked? Enter Token Manually:</p>
-           <div style="display: flex; gap: 10px;">
-              <input type="text" id="manual-token-input" placeholder="Paste full token code here..." style="flex: 1;" />
-              <button class="btn" style="width: auto;" onclick="app.submitManualAttendance()">Submit</button>
-           </div>
-        </div>
-
         <div id="scan-success-msg" style="display: none; margin-top: 20px;">
           <h3 style="color: var(--success); font-size: 1.5rem;">✅ Attendance Marked!</h3>
           <p style="color: var(--text-muted); margin-top: 10px;">You may now close this window or lock your phone.</p>

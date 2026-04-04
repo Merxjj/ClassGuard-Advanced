@@ -3,7 +3,8 @@ const exceljs = require('exceljs');
 
 exports.startSession = async (req, res) => {
   try {
-    let gatewayIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    let rawIp = req.headers['x-forwarded-for'];
+    let gatewayIp = rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress;
     
     if (gatewayIp === '::1' || gatewayIp === '::ffff:127.0.0.1') {
       gatewayIp = '127.0.0.1';

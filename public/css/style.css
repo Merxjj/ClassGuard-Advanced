@@ -271,3 +271,46 @@ option { background: var(--bg-dark); color: white; }
   5% { transform: scale(1.1); opacity: 0; }
   100% { transform: scale(1.1); opacity: 0; }
 }
+
+/* Customizing html5-qrcode injected elements */
+#reader {
+  border: 2px solid var(--glass-border) !important;
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 15px;
+  background: rgba(0,0,0,0.2);
+}
+#reader button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  margin: 10px 5px;
+}
+#reader button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+#reader a {
+  color: var(--secondary);
+  text-decoration: none;
+  font-weight: bold;
+}
+#reader select {
+  padding: 8px;
+  background: var(--bg-dark);
+  color: white;
+  border: 1px solid var(--glass-border);
+  border-radius: 5px;
+  margin: 5px;
+  cursor: pointer;
+}
+#reader canvas {
+  border-radius: 8px;
+}

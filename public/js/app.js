@@ -157,8 +157,6 @@ const app = {
       const qrDataUrl = data.qrDataUrl || data;
       const token = data.token || '';
       document.getElementById('dynamic-qr-img').src = qrDataUrl;
-      const tokenDisplay = document.getElementById('admin-token-display');
-      if (tokenDisplay) tokenDisplay.value = token;
     });
 
     socket.on('attendance-marked', (studentData) => {
@@ -296,11 +294,7 @@ const app = {
       }, 500);
   },
 
-  async submitManualAttendance() {
-    const input = document.getElementById('manual-token-input');
-    if (!input || !input.value.trim()) return this.showToast('Please enter a valid token link', 'error');
-    this.submitAttendance(input.value.trim());
-  },
+
 
   async submitAttendance(qrToken) {
     try {
