@@ -5,21 +5,20 @@ const { Op } = require('sequelize');
 exports.markAttendance = async (req, res) => {
   try {
     const { qrToken, deviceTicket, deviceFingerprint } = req.body;
-
-    if (!qrToken) {
-      return res.status(400).json({ error: 'QR Token is required' });
+    if (!qrToken || !qrToken.includes(':')) {
+      return res.status(400).json({ error: 'QR Token is completely physically invalid' });
     }
 
-    // 1. Validate the JWT token from QR
-    let decodedQr;
-    try {
-      decodedQr = jwt.verify(qrToken, process.env.JWT_SECRET);
-    } catch (err) {
-      // Token is expired (older than 10-15s) or tampered
-      return res.status(400).json({ error: 'QR Code is invalid or expired. Please scan the latest one.' });
-    }
+    const sessionIdRaw = qrToken.split(':')[0];
+    const sessionId = parseInt(sessionIdRaw, 10);
 
-    const { sessionId, nonce } = decodedQr;
+    // 1. Validate the Stateful token directly from memory
+    const qrService = require('../services/qrService');
+    const isValid = qrService.validateToken(sessionId, qrToken);
+    
+    if (!isValid) {
+      return res.status(400).json({ error: 'QR Code is invalid or expired. Please scan the projector screen again.' });
+    }
 
     // 2. Validate Session
     const session = await Session.findByPk(sessionId);

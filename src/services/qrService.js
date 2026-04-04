@@ -1,17 +1,22 @@
-const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const QRCode = require('qrcode');
 
+// Stateful memory to securely store tiny QR strings without cryptographic bloat
+const activeTokens = new Map(); 
+
 exports.generateDynamicQR = async (sessionId) => {
-  const payload = {
-    sessionId,
-    nonce: Math.random().toString(36).substring(2, 15) // Nonce for replay protection
-  };
+  // Generate a tiny 10-character hex code and append the sessionId
+  const secret = crypto.randomBytes(5).toString('hex'); 
+  const token = `${sessionId}:${secret}`; 
   
-  // Token expires slowly (2 minutes) to account for manual entering and slow GPS lock delays
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2m' });
-  
+  // Save it mathematically in short-term memory (keeping the previous one briefly valid for cross-over scans)
+  const sessionTokens = activeTokens.get(sessionId) || { current: null, previous: null };
+  sessionTokens.previous = sessionTokens.current;
+  sessionTokens.current = token;
+  activeTokens.set(sessionId, sessionTokens);
+
   try {
-    // Generate the QR Code as a base64 string
+    // Generate the incredibly crisp, blocky QR Code
     const qrDataUrl = await QRCode.toDataURL(token, {
       margin: 2,
       width: 400,
@@ -25,4 +30,10 @@ exports.generateDynamicQR = async (sessionId) => {
     console.error("QR Generation Error:", err);
     return null;
   }
+};
+
+exports.validateToken = (sessionId, token) => {
+    const sessionTokens = activeTokens.get(sessionId);
+    if (!sessionTokens) return false;
+    return sessionTokens.current === token || sessionTokens.previous === token;
 };

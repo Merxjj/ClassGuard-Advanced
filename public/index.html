@@ -99,11 +99,11 @@
           
           <div id="qr-display" style="display: none; margin-top: 30px; text-align: center;">
             <p style="color: var(--text-muted); margin-bottom: 15px;">Scanning QR Code generates dynamic tokens.</p>
-            <div class="qr-wrapper">
+            <div class="qr-wrapper" id="qr-wrapper" style="cursor: pointer;" onclick="app.toggleFullscreenQR()" title="Click to enter Fullscreen Projector Mode">
               <img id="dynamic-qr-img" src="" alt="Dynamic QR Code" />
               <div class="ripple"></div>
             </div>
-            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);">Refreshes every 2 minutes</p>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);">Refreshes every 2 minutes <br> <span style="font-weight: 600; color: var(--primary); cursor: pointer;" onclick="app.toggleFullscreenQR()">[Enlarge for Projector]</span></p>
           </div>
         </div>
 

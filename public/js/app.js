@@ -9,6 +9,22 @@ const app = {
   user: JSON.parse(localStorage.getItem('user') || 'null'),
 
   init() {
+    // Listen for fullscreen exits to restore CSS gracefully
+    document.addEventListener('fullscreenchange', () => {
+        const wrapper = document.getElementById('qr-wrapper');
+        const img = document.getElementById('dynamic-qr-img');
+        if (!document.fullscreenElement && wrapper) {
+            wrapper.style.backgroundColor = 'white';
+            wrapper.style.display = 'block';
+            wrapper.style.alignItems = 'initial';
+            wrapper.style.justifyContent = 'initial';
+            if (img) {
+                img.style.width = '250px';
+                img.style.height = '250px';
+            }
+        }
+    });
+
     this.checkAuth();
   },
 
@@ -22,12 +38,12 @@ const app = {
   },
 
   async getDeviceFingerprint() {
-    if(!window.fpPromise) return 'unknown_fp';
+    if (!window.fpPromise) return 'unknown_fp';
     try {
       const fp = await window.fpPromise;
       const result = await fp.get();
       return result.visitorId;
-    } catch(err) {
+    } catch (err) {
       return 'unknown_fp';
     }
   },
@@ -56,9 +72,9 @@ const app = {
     if (this.token && this.user) {
       document.getElementById('nav-actions').style.display = 'block';
       document.getElementById('user-name-display').textContent = `Hi, ${this.user.name}`;
-      
+
       this.switchSection(this.user.role === 'admin' ? 'admin' : 'student');
-      
+
       if (this.user.role === 'admin') {
         this.initAdmin();
       } else {
@@ -109,7 +125,7 @@ const app = {
     const password = document.getElementById('reg-password').value;
     const role = document.getElementById('reg-role').value;
     const studentId = document.getElementById('reg-studentid').value;
-    
+
     try {
       const { token, data } = await this.apiCall('/auth/register', 'POST', { name, email, password, role, studentId });
       this.setLocalAuth(token, data.user);
@@ -140,17 +156,17 @@ const app = {
   /* ADMIN METHODS */
   async initAdmin() {
     socket = io();
-    
+
     // Check if there is an active session
     try {
       const res = await this.apiCall('/admin/session/active');
       if (res.data.session) {
-          currentSessionId = res.data.session.id;
-          lastSessionId = res.data.session.id;
-          this.activateSessionView();
-          this.loadAttendanceList();
+        currentSessionId = res.data.session.id;
+        lastSessionId = res.data.session.id;
+        this.activateSessionView();
+        this.loadAttendanceList();
       }
-    } catch(err) {}
+    } catch (err) { }
 
     socket.on('new-qr', (data) => {
       // support both old string and new object
@@ -197,7 +213,7 @@ const app = {
     document.getElementById('btn-start-session').style.display = 'none';
     document.getElementById('btn-stop-session').style.display = 'block';
     document.getElementById('qr-display').style.display = 'block';
-    if(socket) socket.emit('join-session', currentSessionId);
+    if (socket) socket.emit('join-session', currentSessionId);
   },
 
   deactivateSessionView() {
@@ -208,31 +224,53 @@ const app = {
     currentSessionId = null;
   },
 
-  async loadAttendanceList() {
-    if(!currentSessionId) return;
-    try {
-        const res = await this.apiCall(`/admin/session/${currentSessionId}/attendance`);
-        const list = document.getElementById('admin-student-list');
-        list.innerHTML = '';
-        res.data.attendances.forEach(att => {
-            this.addStudentToUI({
-                name: att.student.name,
-                studentId: att.student.studentId,
-                timestamp: att.timestamp
-            }, false);
+  toggleFullscreenQR() {
+    const wrapper = document.getElementById('qr-wrapper');
+    const img = document.getElementById('dynamic-qr-img');
+    if (!wrapper || !img) return;
+
+    if (!document.fullscreenElement) {
+        wrapper.requestFullscreen().catch(err => {
+            this.showToast(`Error starting fullscreen: ${err.message}`, 'error');
         });
-        if(res.data.attendances.length === 0) {
-            list.innerHTML = '<p style="color: var(--text-muted);">No students marked yet.</p>';
+        wrapper.style.backgroundColor = 'white';
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.justifyContent = 'center';
+        img.style.width = '85vmin';
+        img.style.height = '85vmin';
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
         }
-    } catch(err) {
-        console.error(err);
+    }
+  },
+
+  async loadAttendanceList() {
+    if (!currentSessionId) return;
+    try {
+      const res = await this.apiCall(`/admin/session/${currentSessionId}/attendance`);
+      const list = document.getElementById('admin-student-list');
+      list.innerHTML = '';
+      res.data.attendances.forEach(att => {
+        this.addStudentToUI({
+          name: att.student.name,
+          studentId: att.student.studentId,
+          timestamp: att.timestamp
+        }, false);
+      });
+      if (res.data.attendances.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-muted);">No students marked yet.</p>';
+      }
+    } catch (err) {
+      console.error(err);
     }
   },
 
   addStudentToUI(studentData, notify = false) {
     const list = document.getElementById('admin-student-list');
-    if(list.innerHTML.includes('No students marked yet')) {
-        list.innerHTML = '';
+    if (list.innerHTML.includes('No students marked yet')) {
+      list.innerHTML = '';
     }
     const time = new Date(studentData.timestamp).toLocaleTimeString();
     const html = `
@@ -254,12 +292,12 @@ const app = {
     const targetSession = currentSessionId || lastSessionId;
     if (!targetSession) return this.showToast('No session selected to export', 'error');
     const url = `${API_URL}/admin/session/${targetSession}/export`;
-    
+
     // Create temporary download link with Auth header info appended locally via fetch as Blob
     fetch(url, { headers: { 'Authorization': `Bearer ${this.token}` } })
       .then(res => {
-          if(!res.ok) throw new Error('Export failed');
-          return res.blob()
+        if (!res.ok) throw new Error('Export failed');
+        return res.blob()
       })
       .then(blob => {
         const a = document.createElement('a');
@@ -274,24 +312,24 @@ const app = {
 
   /* STUDENT METHODS */
   initStudent() {
-      // Re-init scanner if DOM is recreated/shown
-      setTimeout(() => {
-        if (!html5QrcodeScanner) {
-          html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-        }
-        
-        let lastScanTime = 0;
+    // Re-init scanner if DOM is recreated/shown
+    setTimeout(() => {
+      if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      }
 
-        html5QrcodeScanner.render((decodedText) => {
-          // Debounce scanning
-          if(Date.now() - lastScanTime < 3000) return;
-          lastScanTime = Date.now();
-          
-          this.submitAttendance(decodedText);
-        }, (errorMessage) => {
-          // Background scan errors, ignore
-        });
-      }, 500);
+      let lastScanTime = 0;
+
+      html5QrcodeScanner.render((decodedText) => {
+        // Debounce scanning
+        if (Date.now() - lastScanTime < 3000) return;
+        lastScanTime = Date.now();
+
+        this.submitAttendance(decodedText);
+      }, (errorMessage) => {
+        // Background scan errors, ignore
+      });
+    }, 500);
   },
 
 
@@ -302,30 +340,30 @@ const app = {
       const deviceTicket = this.getDeviceTicket();
       const deviceFingerprint = await this.getDeviceFingerprint();
 
-      const res = await this.apiCall('/attendance/mark', 'POST', { 
+      const res = await this.apiCall('/attendance/mark', 'POST', {
         qrToken,
         deviceTicket,
         deviceFingerprint
       });
-      
+
       // Stop scanner visually
       document.getElementById('reader').style.display = 'none';
-      if(html5QrcodeScanner) html5QrcodeScanner.pause();
+      if (html5QrcodeScanner) html5QrcodeScanner.pause();
 
       document.getElementById('scan-success-msg').style.display = 'block';
       this.showToast('Attendance Marked Successfully!');
-      
+
     } catch (err) {
-      if(err.message.includes('already recorded an attendance today')) {
-          document.getElementById('reader').style.display = 'none';
-          document.getElementById('scan-success-msg').innerHTML = '<h3 style="color: var(--danger); font-size: 1.5rem;">🚫 Device Locked</h3><p style="color: var(--text-muted); margin-top: 10px;">Attendance was already marked from this physical device for this session! Sharing devices is strictly prohibited.</p>';
-          document.getElementById('scan-success-msg').style.display = 'block';
-      } else if(err.message.includes('already marked')) {
-          document.getElementById('reader').style.display = 'none';
-          document.getElementById('scan-success-msg').innerHTML = '<h3 style="color: var(--primary); font-size: 1.5rem;">✅ Already Marked</h3><p style="color: var(--text-muted); margin-top: 10px;">Your attendance is already secured for this session.</p>';
-          document.getElementById('scan-success-msg').style.display = 'block';
+      if (err.message.includes('already recorded an attendance today')) {
+        document.getElementById('reader').style.display = 'none';
+        document.getElementById('scan-success-msg').innerHTML = '<h3 style="color: var(--danger); font-size: 1.5rem;">🚫 Device Locked</h3><p style="color: var(--text-muted); margin-top: 10px;">Attendance was already marked from this physical device for this session! Sharing devices is strictly prohibited.</p>';
+        document.getElementById('scan-success-msg').style.display = 'block';
+      } else if (err.message.includes('already marked')) {
+        document.getElementById('reader').style.display = 'none';
+        document.getElementById('scan-success-msg').innerHTML = '<h3 style="color: var(--primary); font-size: 1.5rem;">✅ Already Marked</h3><p style="color: var(--text-muted); margin-top: 10px;">Your attendance is already secured for this session.</p>';
+        document.getElementById('scan-success-msg').style.display = 'block';
       } else {
-          this.showToast(err.message, 'error');
+        this.showToast(err.message, 'error');
       }
     }
   }
