@@ -294,6 +294,31 @@ option {
   }
 }
 
+/* Footer Copyright */
+.app-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--glass-border);
+  background: rgba(15, 17, 26, 0.8);
+  backdrop-filter: blur(10px);
+  margin-top: auto;
+}
+.app-footer strong {
+  color: var(--text-main);
+}
+.app-footer a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+.app-footer a:hover {
+  text-decoration: underline;
+  color: var(--primary-hover);
+}
+
 .ripple {
   position: absolute;
   top: 0;
