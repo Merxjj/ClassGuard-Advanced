@@ -149,7 +149,27 @@ const app = {
     this.token = null;
     this.user = null;
     if (socket) socket.disconnect();
-    if (html5QrcodeScanner) html5QrcodeScanner.clear();
+
+    // Reset scanner
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.clear();
+      html5QrcodeScanner = null;
+    }
+
+    // Forcebly reset the DOM UI elements so Student B has a fresh experience
+    const reader = document.getElementById('reader');
+    if (reader) reader.style.display = 'inline-block';
+
+    const successMsg = document.getElementById('scan-success-msg');
+    if (successMsg) {
+      successMsg.style.display = 'none';
+      // Reset to original green look just in case it was red-blocked previously
+      successMsg.innerHTML = `
+        <h3 style="color: var(--success); font-size: 1.5rem;">✅ Attendance Marked!</h3>
+        <p style="color: var(--text-muted); margin-top: 10px;">You may now close this window or lock your phone.</p>
+      `;
+    }
+
     this.checkAuth();
   },
 
