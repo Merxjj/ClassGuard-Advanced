@@ -366,9 +366,11 @@ const app = {
         deviceFingerprint
       });
 
-      // Stop scanner visually
-      document.getElementById('reader').style.display = 'none';
-      if (html5QrcodeScanner) html5QrcodeScanner.pause();
+      // Stop scanner visually and unhook camera
+      if (html5QrcodeScanner) {
+          html5QrcodeScanner.clear();
+          html5QrcodeScanner = null;
+      }
 
       document.getElementById('scan-success-msg').style.display = 'block';
       this.showToast('Attendance Marked Successfully!');
@@ -376,11 +378,25 @@ const app = {
     } catch (err) {
       if (err.message.includes('already recorded an attendance today')) {
         document.getElementById('reader').style.display = 'none';
-        document.getElementById('scan-success-msg').innerHTML = '<h3 style="color: var(--danger); font-size: 1.5rem;">🚫 Device Locked</h3><p style="color: var(--text-muted); margin-top: 10px;">Attendance was already marked from this physical device for this session! Sharing devices is strictly prohibited.</p>';
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+        }
+        document.getElementById('scan-success-msg').innerHTML = `
+          <h3 style="color: var(--danger); font-size: 1.5rem;">🚫 Device Locked</h3>
+          <p style="color: var(--text-muted); margin-top: 10px;">Attendance was already marked from this physical device for this session! Sharing devices is strictly prohibited.</p>
+        `;
         document.getElementById('scan-success-msg').style.display = 'block';
       } else if (err.message.includes('already marked')) {
         document.getElementById('reader').style.display = 'none';
-        document.getElementById('scan-success-msg').innerHTML = '<h3 style="color: var(--primary); font-size: 1.5rem;">✅ Already Marked</h3><p style="color: var(--text-muted); margin-top: 10px;">Your attendance is already secured for this session.</p>';
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+        }
+        document.getElementById('scan-success-msg').innerHTML = `
+          <h3 style="color: var(--primary); font-size: 1.5rem;">✅ Already Marked</h3>
+          <p style="color: var(--text-muted); margin-top: 10px;">Your attendance is already secured for this session.</p>
+        `;
         document.getElementById('scan-success-msg').style.display = 'block';
       } else {
         this.showToast(err.message, 'error');
