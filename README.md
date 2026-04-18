@@ -1,5 +1,7 @@
 # ClassGuard Smart Attendance System
 
+**🚀 Live Demo:** [https://sad-pumas-draw.loca.lt](https://sad-pumas-draw.loca.lt)
+
 ClassGuard is an advanced, secure attendance tracking platform designed to eliminate classroom cheating. It combines dynamic QR codes, live WebSockets, physical network boundaries, and rigorous device-fingerprinting. 
 
 Developed by **Meraj Alam**.
