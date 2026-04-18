@@ -356,9 +356,15 @@ const app = {
 
   async submitAttendance(qrToken) {
     try {
-      this.showToast('Generating Security Checks...', 'success');
+      this.showToast('Verifying Device Security...', 'success');
+      
       const deviceTicket = this.getDeviceTicket();
       const deviceFingerprint = await this.getDeviceFingerprint();
+
+      if (!deviceFingerprint || deviceFingerprint === 'unknown_fp') {
+          this.showToast('Security Signature Loading... please wait a second and try again.', 'error');
+          return;
+      }
 
       const res = await this.apiCall('/attendance/mark', 'POST', {
         qrToken,

@@ -1,14 +1,13 @@
 const { Session, Attendance, User, Log } = require('../models');
 const exceljs = require('exceljs');
+const { normalizeIp } = require('../utils/ipUtils');
 
 exports.startSession = async (req, res) => {
   try {
     let rawIp = req.headers['x-forwarded-for'];
-    let gatewayIp = rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress;
+    let gatewayIp = normalizeIp(rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress);
     
-    if (gatewayIp === '::1' || gatewayIp === '::ffff:127.0.0.1') {
-      gatewayIp = '127.0.0.1';
-    }
+    console.log(`[Admin] Starting session. Detected Gateway IP: ${gatewayIp}`);
 
     const session = await Session.create({
       adminId: req.user.id,

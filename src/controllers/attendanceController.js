@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { Attendance, Session, Log } = require('../models');
 const { Op } = require('sequelize');
+const { normalizeIp } = require('../utils/ipUtils');
 
 exports.markAttendance = async (req, res) => {
   try {
@@ -28,12 +29,11 @@ exports.markAttendance = async (req, res) => {
 
     // 4. IP Validation
     let rawIp = req.headers['x-forwarded-for'];
-    let studentIp = rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress;
-
-    if (studentIp === '::1' || studentIp === '::ffff:127.0.0.1') studentIp = '127.0.0.1';
+    let studentIp = normalizeIp(rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress);
 
     // Anti-proxy logic: compare with gateway IP
     if (session.validGatewayIp && session.validGatewayIp !== '127.0.0.1' && studentIp !== session.validGatewayIp) {
+        console.warn(`[Blocked] IP Mismatch for user ${req.user.id}. Session: ${session.validGatewayIp}, Student: ${studentIp}`);
         await Log.create({
             action: 'PROXY_ATTEMPT_BLOCKED',
             details: `IP Mismatch. Expected: ${session.validGatewayIp}, Got: ${studentIp}`,
@@ -41,7 +41,7 @@ exports.markAttendance = async (req, res) => {
             ipAddress: studentIp
         });
         
-        return res.status(403).json({ error: `Proxy attendance blocked! Must connect to class WiFi.` });
+        return res.status(403).json({ error: `Proxy attendance blocked! Must connect to class WiFi. (Your IP: ${studentIp}, Expected: ${session.validGatewayIp})` });
     }
 
     // 5. Ensure student hasn't already marked attendance
@@ -54,19 +54,23 @@ exports.markAttendance = async (req, res) => {
     }
 
     // 5b. The Ultimate Hardware Proxy Lock! 
-    // Ensure no overlapping physical devices try to scan twice.
-    if (deviceTicket || (deviceFingerprint && deviceFingerprint !== 'unknown_fp')) {
-        const overlappingDevice = await Attendance.findOne({
-            where: {
-                sessionId,
-                [Op.or]: [
-                    deviceTicket ? { deviceTicket } : null,
-                    (deviceFingerprint && deviceFingerprint !== 'unknown_fp') ? { deviceFingerprint } : null
-                ].filter(Boolean) // Remove nulls from Op.or
-            }
-        });
+    // STRICT RULE: If no valid fingerprint, block immediately.
+    if (!deviceFingerprint || deviceFingerprint === 'unknown_fp') {
+        return res.status(403).json({ error: 'Security signature missing! Please ensure you are not using a non-standard browser and try refreshing.' });
+    }
 
-        if (overlappingDevice) {
+    // Ensure no overlapping physical devices try to scan twice.
+    const overlappingDevice = await Attendance.findOne({
+        where: {
+            sessionId,
+            [Op.or]: [
+                deviceTicket ? { deviceTicket } : null,
+                { deviceFingerprint }
+            ].filter(Boolean)
+        }
+    });
+
+    if (overlappingDevice) {
             await Log.create({
                 action: 'DEVICE_SHARE_BLOCKED',
                 details: `Physical Device lock hit. Someone else checked in on this phone!`,
@@ -75,7 +79,6 @@ exports.markAttendance = async (req, res) => {
             });
             return res.status(403).json({ error: 'This physical device (phone/laptop) has already recorded an attendance today! You cannot share devices.' });
         }
-    }
 
     // 6. Mark Attendance
     const attendance = await Attendance.create({

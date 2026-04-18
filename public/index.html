@@ -16,9 +16,11 @@
   <script src="/socket.io/socket.io.js"></script>
   <!-- HTML5 QR Code Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <!-- FingerprintJS for Device Locking -->
+  <!-- Unified FingerprintJS Loading -->
+  <script src="https://openfpcdn.io/fingerprintjs/v4/iife.min.js"></script>
   <script>
-    window.fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
+    // Initialize global promise for app.js
+    window.fpPromise = FingerprintJS.load();
   </script>
 </head>
 <body>
