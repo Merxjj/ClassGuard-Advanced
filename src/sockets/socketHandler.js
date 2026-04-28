@@ -44,7 +44,7 @@ module.exports = (io) => {
         } catch (err) {
           console.error(err);
         }
-      }, 7000); // 7 seconds
+      }, 4000); // 4 seconds (Hyper-Security Mode)
 
       activeIntervals.set(sessionId, intervalId);
     });

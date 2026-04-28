@@ -32,6 +32,7 @@ exports.markAttendance = async (req, res) => {
 
     if (studentIp === '::1' || studentIp === '::ffff:127.0.0.1') studentIp = '127.0.0.1';
 
+    /* 
     // Anti-proxy logic: compare with gateway IP
     if (session.validGatewayIp && session.validGatewayIp !== '127.0.0.1' && studentIp !== session.validGatewayIp) {
         await Log.create({
@@ -43,6 +44,7 @@ exports.markAttendance = async (req, res) => {
         
         return res.status(403).json({ error: `Proxy attendance blocked! Must connect to class WiFi.` });
     }
+    */
 
     // 5. Ensure student hasn't already marked attendance
     const existingAttendance = await Attendance.findOne({
