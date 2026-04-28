@@ -15,11 +15,6 @@ const Session = sequelize.define('Session', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-  validGatewayIp: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    comment: 'The IP address range or exact IP allowed to mark attendance',
-  },
   sessionStartTime: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

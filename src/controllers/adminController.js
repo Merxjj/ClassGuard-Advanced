@@ -3,25 +3,16 @@ const exceljs = require('exceljs');
 
 exports.startSession = async (req, res) => {
   try {
-    let rawIp = req.headers['x-forwarded-for'];
-    let gatewayIp = rawIp ? rawIp.split(',')[0].trim() : req.socket.remoteAddress;
-    
-    if (gatewayIp === '::1' || gatewayIp === '::ffff:127.0.0.1') {
-      gatewayIp = '127.0.0.1';
-    }
-
     const session = await Session.create({
       adminId: req.user.id,
-      validGatewayIp: gatewayIp,
       isActive: true,
       sessionStartTime: new Date()
     });
 
     await Log.create({
       action: 'STARTED_SESSION',
-      details: `Session ${session.id} started. Gateway IP: ${gatewayIp}`,
-      userId: req.user.id,
-      ipAddress: gatewayIp
+      details: `Session ${session.id} started.`,
+      userId: req.user.id
     });
 
     res.status(201).json({ status: 'success', data: { session } });

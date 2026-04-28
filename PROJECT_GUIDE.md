@@ -38,7 +38,7 @@ ClassGuard's value lies in its **Anti-Cheating Firewall**. When a student scans 
 | :--- | :--- | :--- | :--- |
 | **1** | **Stateful QR** | `qrService.js` | Tokens refresh every **4s**. Only current/previous tokens work. | Prevents photo-sharing via WhatsApp. |
 | **2** | **Session Check** | `Session` Model | Validates if `isActive: true`. | Prevents attendance on expired classes. |
-| **3** | **Network Lock** | `ipUtils.js` | **(CURRENTLY DISABLED FOR TESTING)** Compares Student IP vs Admin IP. | Ensures physical presence on Classroom WiFi. |
+| **3** | **Network Lock** | `ipUtils.js` | **(REMOVED)** This layer has been removed to prioritize speed and student accessibility. | Previously ensured classroom presence via WiFi. |
 | **4** | **Device Lock** | FingerprintJS | Checks `deviceFingerprint` for duplicates in the session. | Prevents one student from marking for multiple friends. |
 
 ---
